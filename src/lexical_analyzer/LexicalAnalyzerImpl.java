@@ -43,7 +43,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         RESERVED_OPERATOR_MAP.put(")", LexicalType.LP);
         RESERVED_OPERATOR_MAP.put(",", LexicalType.COMMA);
         RESERVED_OPERATOR_MAP.put(".", LexicalType.DOT);
-
+        RESERVED_OPERATOR_MAP.put("\n", LexicalType.NL);
     }
 
     public LexicalAnalyzerImpl(String filepath) throws Exception{
@@ -80,7 +80,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
                 return getLiteral();
             }
 
-            if (String.valueOf(ch).matches("[\\.\\+\\-\\*\\/\\)\\(,]")){
+            if (String.valueOf(ch).matches("[\\.\n\\+\\-\\*\\/\\)\\(,]")){
                 reader.unread(ci);
                 return getSingleOperator();
             }
@@ -126,7 +126,11 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
             reader.unread(ci);
             break;
         }
-        return new LexicalUnit(LexicalType.INTVAL, new ValueImpl(Integer.parseInt(target)));
+        try {
+            return new LexicalUnit(LexicalType.INTVAL, new ValueImpl(Integer.parseInt(target)));
+        } catch (NumberFormatException e){
+            return new LexicalUnit(LexicalType.DOUBLEVAL, new ValueImpl(Double.parseDouble(target)));
+        }
     }
 
     private LexicalUnit getLiteral() throws Exception {
@@ -148,6 +152,11 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         while(true) {
             int ci = reader.read();
             char ch = (char) ci;
+            if (String.valueOf(ch).matches("[\n]")) {
+                if (target.equals("")) target = String.valueOf(ch);
+                else reader.unread(ci);
+                break;
+            }
             if (String.valueOf(ch).matches("[\\.\\+\\-\\*\\/\\)\\(,]")) {
                 target += ch;
                 continue;
