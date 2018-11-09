@@ -46,8 +46,8 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         RESERVED_OPERATOR_MAP.put("\n", LexicalType.NL);
     }
 
-    public LexicalAnalyzerImpl(String filepath) throws Exception{
-        Reader ir = new InputStreamReader(new FileInputStream(filepath));
+    public LexicalAnalyzerImpl(FileInputStream fs) throws Exception{
+        Reader ir = new InputStreamReader(fs);
         this.reader = new PushbackReader(ir);
     }
 
