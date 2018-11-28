@@ -12,28 +12,18 @@ public class Main {
             filepath = args[0];
         }
 
-        FileInputStream fs;
-        try {
-            fs = new FileInputStream(filepath);
-            try {
-                LexicalUnit lexicalUnit;
-                LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzerImpl(fs);
-                while (true) {
-                    lexicalUnit = lexicalAnalyzer.get();
-                    System.out.println(lexicalUnit);
-                    if (lexicalUnit.getType() == LexicalType.EOF){
-                        break;
-                    }
+        try (FileInputStream fs = new FileInputStream(filepath)) {
+            LexicalUnit lexicalUnit;
+            LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzerImpl(fs);
+            while (true) {
+                lexicalUnit = lexicalAnalyzer.get();
+                System.out.println(lexicalUnit);
+                if (lexicalUnit.getType() == LexicalType.EOF) {
+                    break;
                 }
-            } catch(IOException e) {
-                System.out.println("io error.");
-            } catch (Exception e) {
-                System.out.println(e);
-            } finally {
-                fs.close();
             }
         } catch (Exception e) {
-            System.out.println("file input error!");
+            System.out.println(e);
         }
 
     }

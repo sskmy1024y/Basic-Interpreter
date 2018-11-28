@@ -46,7 +46,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         RESERVED_OPERATOR_MAP.put("\n", LexicalType.NL);
     }
 
-    public LexicalAnalyzerImpl(FileInputStream fs) throws Exception{
+    public LexicalAnalyzerImpl(FileInputStream fs) throws Exception {
         Reader ir = new InputStreamReader(fs);
         this.reader = new PushbackReader(ir);
     }
@@ -54,12 +54,12 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
     @Override
     public LexicalUnit get() throws Exception {
 
-        while(true) {
-            //まずは一文字読む
-            //EOF対策のためにreadはintで返す。
+        while (true) {
+            // まずは一文字読む
+            // EOF対策のためにreadはintで返す。
             int ci = reader.read();
 
-            //End Of File(-1)であれば、EOFを返す。
+            // End Of File(-1)であれば、EOFを返す。
             if (ci < 0) {
                 return new LexicalUnit(LexicalType.EOF);
             }
@@ -71,21 +71,21 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
                 return getString();
             }
 
-            if (String.valueOf(ch).matches("[0-9.]+")){
+            if (String.valueOf(ch).matches("[0-9.]+")) {
                 reader.unread(ci);
                 return getNumber();
             }
 
-            if (String.valueOf(ch).matches("^\"[^\"]*\"?")){
+            if (String.valueOf(ch).matches("^\"[^\"]*\"?")) {
                 return getLiteral();
             }
 
-            if (String.valueOf(ch).matches("[\\.\n\\+\\-\\*\\/\\)\\(,]")){
+            if (String.valueOf(ch).matches("[\\.\n\\+\\-\\*\\/\\)\\(,]")) {
                 reader.unread(ci);
                 return getSingleOperator();
             }
 
-            if (String.valueOf(ch).matches("[><=]|=[><]|[><]=|<>")){
+            if (String.valueOf(ch).matches("[><=]|=[><]|[><]=|<>")) {
                 reader.unread(ci);
                 return getMultiOperator();
             }
@@ -94,20 +94,20 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 
     private LexicalUnit getString() throws Exception {
         String target = "";
-        while(true) {
+        while (true) {
             int ci = reader.read();
             char ch = (char) ci;
             if (String.valueOf(ch).matches("^[a-zA-Z]\\w*")) {
                 target += ch;
                 continue;
-            } else if (!target.equals("") && String.valueOf(ch).matches("^[a-zA-Z0-9]\\w*")){
+            } else if (!target.equals("") && String.valueOf(ch).matches("^[a-zA-Z0-9]\\w*")) {
                 target += ch;
                 continue;
             }
             reader.unread(ci);
             break;
         }
-        if (RESERVED_WORD_MAP.containsKey(target)){
+        if (RESERVED_WORD_MAP.containsKey(target)) {
             return new LexicalUnit(RESERVED_WORD_MAP.get(target));
         } else {
             return new LexicalUnit(LexicalType.NAME, new ValueImpl(target));
@@ -116,26 +116,29 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 
     private LexicalUnit getNumber() throws Exception {
         String target = "";
-        while(true) {
+        boolean doubleFlug = false;
+        while (true) {
             int ci = reader.read();
             char ch = (char) ci;
             if (String.valueOf(ch).matches("[0-9.]+")) {
+                if (ch == '.')
+                    doubleFlug = true;
                 target += ch;
                 continue;
             }
             reader.unread(ci);
             break;
         }
-        try {
-            return new LexicalUnit(LexicalType.INTVAL, new ValueImpl(Integer.parseInt(target)));
-        } catch (NumberFormatException e){
+        if (doubleFlug) {
             return new LexicalUnit(LexicalType.DOUBLEVAL, new ValueImpl(Double.parseDouble(target)));
+        } else {
+            return new LexicalUnit(LexicalType.INTVAL, new ValueImpl(Integer.parseInt(target)));
         }
     }
 
     private LexicalUnit getLiteral() throws Exception {
         String target = "";
-        while(true) {
+        while (true) {
             int ci = reader.read();
             char ch = (char) ci;
             if (!String.valueOf(ch).matches("^\"[^\"]*\"?")) {
@@ -149,12 +152,14 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 
     private LexicalUnit getSingleOperator() throws Exception {
         String target = "";
-        while(true) {
+        while (true) {
             int ci = reader.read();
             char ch = (char) ci;
             if (String.valueOf(ch).matches("[\n]")) {
-                if (target.equals("")) target = String.valueOf(ch);
-                else reader.unread(ci);
+                if (target.equals(""))
+                    target = String.valueOf(ch);
+                else
+                    reader.unread(ci);
                 break;
             }
             if (String.valueOf(ch).matches("[\\.\\+\\-\\*\\/\\)\\(,]")) {
@@ -164,13 +169,15 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
             reader.unread(ci);
             break;
         }
-        if (RESERVED_OPERATOR_MAP.containsKey(target)) return new LexicalUnit(RESERVED_OPERATOR_MAP.get(target));
-        else throw new Exception();
+        if (RESERVED_OPERATOR_MAP.containsKey(target))
+            return new LexicalUnit(RESERVED_OPERATOR_MAP.get(target));
+        else
+            throw new Exception();
     }
 
     private LexicalUnit getMultiOperator() throws Exception {
         String target = "";
-        while(true) {
+        while (true) {
             int ci = reader.read();
             char ch = (char) ci;
             if (String.valueOf(ch).matches("[><=]|=[><]|[><]=|<>")) {
@@ -180,10 +187,11 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
             reader.unread(ci);
             break;
         }
-        if (RESERVED_OPERATOR_MAP.containsKey(target)) return new LexicalUnit(RESERVED_OPERATOR_MAP.get(target));
-        else throw new Exception();
+        if (RESERVED_OPERATOR_MAP.containsKey(target))
+            return new LexicalUnit(RESERVED_OPERATOR_MAP.get(target));
+        else
+            throw new Exception();
     }
-
 
     @Override
     public boolean expect(LexicalType type) throws Exception {
