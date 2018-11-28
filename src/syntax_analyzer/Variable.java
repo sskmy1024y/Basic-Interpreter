@@ -1,4 +1,6 @@
-package newlang4;
+package syntax_analyzer;
+
+import lexical_analyzer.*;
 
 public class Variable extends Node {
 	   String var_name;

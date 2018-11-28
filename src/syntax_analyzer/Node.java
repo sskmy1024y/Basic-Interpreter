@@ -1,6 +1,6 @@
-package newlang4;
+package syntax_analyzer;
 
-public class Node {
+abstract public class Node {
     NodeType type;
     Environment env;
 
@@ -18,7 +18,7 @@ public class Node {
         return type;
     }
     
-    public boolean Parse() throws Exception {
+    public boolean parse() throws Exception {
         return true;
     }
     

@@ -1,11 +1,11 @@
-package newlang4;
+package syntax_analyzer;
 
 public enum NodeType {
 	PROGRAM,
 	STMT_LIST,
 	STMT,
 	FOR_STMT,
-	ASSIGN_STMT,
+	SUBST_STMT,
 	BLOCK,
 	IF_BLOCK,
 	LOOP_BLOCK,
