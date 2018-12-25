@@ -1,8 +1,12 @@
 package syntax_analyzer;
 
+import lexical_analyzer.LexicalType;
+import lexical_analyzer.LexicalUnit;
+import lexical_analyzer.Value;
+
 abstract public class Node {
-    NodeType type;
-    Environment env;
+    protected NodeType type;
+    protected Environment env;
 
     /** Creates a new instance of Node */
     public Node() {
@@ -18,8 +22,7 @@ abstract public class Node {
         return type;
     }
     
-    public boolean parse() throws Exception {
-        return true;
+    public void parse() throws Exception {
     }
     
     public Value getValue() throws Exception {
@@ -31,4 +34,8 @@ abstract public class Node {
     	else return "Node";        
     }
 
+    public String toString(int indent) {
+        if (type == NodeType.END) return "END";
+        else return "Node";
+    }
 }

@@ -1,19 +1,21 @@
 package lexical_analyzer;
 
 import java.io.*;
-import java.util.HashMap;
+import java.util.*;
 
 public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 
     private PushbackReader reader;
     private static HashMap<String, LexicalType> RESERVED_WORD_MAP = new HashMap<>();
-    private static HashMap<String, LexicalType> RESERVED_OPERATOR_MAP = new HashMap<>();
+    private static HashMap<String, LexicalType> SYMBOL_MAP = new HashMap<>();
+    private List<LexicalUnit> buffer = new ArrayList<>();
 
     static {
         RESERVED_WORD_MAP.put("IF", LexicalType.IF);
         RESERVED_WORD_MAP.put("THEN", LexicalType.THEN);
         RESERVED_WORD_MAP.put("ELSE", LexicalType.ELSE);
         RESERVED_WORD_MAP.put("ELSEIF", LexicalType.ELSEIF);
+        RESERVED_WORD_MAP.put("ENDIF", LexicalType.ENDIF);
         RESERVED_WORD_MAP.put("FOR", LexicalType.FOR);
         RESERVED_WORD_MAP.put("FORALL", LexicalType.FORALL);
         RESERVED_WORD_MAP.put("NEXT", LexicalType.NEXT);
@@ -27,23 +29,24 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         RESERVED_WORD_MAP.put("LOOP", LexicalType.LOOP);
         RESERVED_WORD_MAP.put("TO", LexicalType.TO);
         RESERVED_WORD_MAP.put("WEND", LexicalType.WEND);
-        RESERVED_OPERATOR_MAP.put("=", LexicalType.EQ);
-        RESERVED_OPERATOR_MAP.put("<", LexicalType.LT);
-        RESERVED_OPERATOR_MAP.put(">", LexicalType.GT);
-        RESERVED_OPERATOR_MAP.put(">=", LexicalType.LE);
-        RESERVED_OPERATOR_MAP.put("=>", LexicalType.LE);
-        RESERVED_OPERATOR_MAP.put("<=", LexicalType.GE);
-        RESERVED_OPERATOR_MAP.put("=<", LexicalType.GE);
-        RESERVED_OPERATOR_MAP.put("<>", LexicalType.NE);
-        RESERVED_OPERATOR_MAP.put("+", LexicalType.ADD);
-        RESERVED_OPERATOR_MAP.put("-", LexicalType.SUB);
-        RESERVED_OPERATOR_MAP.put("*", LexicalType.MUL);
-        RESERVED_OPERATOR_MAP.put("/", LexicalType.DIV);
-        RESERVED_OPERATOR_MAP.put("(", LexicalType.RP);
-        RESERVED_OPERATOR_MAP.put(")", LexicalType.LP);
-        RESERVED_OPERATOR_MAP.put(",", LexicalType.COMMA);
-        RESERVED_OPERATOR_MAP.put(".", LexicalType.DOT);
-        RESERVED_OPERATOR_MAP.put("\n", LexicalType.NL);
+
+        SYMBOL_MAP.put("=", LexicalType.EQ);
+        SYMBOL_MAP.put("<", LexicalType.LT);
+        SYMBOL_MAP.put(">", LexicalType.GT);
+        SYMBOL_MAP.put(">=", LexicalType.LE);
+        SYMBOL_MAP.put("=>", LexicalType.LE);
+        SYMBOL_MAP.put("<=", LexicalType.GE);
+        SYMBOL_MAP.put("=<", LexicalType.GE);
+        SYMBOL_MAP.put("<>", LexicalType.NE);
+        SYMBOL_MAP.put("+", LexicalType.ADD);
+        SYMBOL_MAP.put("-", LexicalType.SUB);
+        SYMBOL_MAP.put("*", LexicalType.MUL);
+        SYMBOL_MAP.put("/", LexicalType.DIV);
+        SYMBOL_MAP.put("(", LexicalType.LP);
+        SYMBOL_MAP.put(")", LexicalType.RP);
+        SYMBOL_MAP.put(",", LexicalType.COMMA);
+        SYMBOL_MAP.put(".", LexicalType.DOT);
+        SYMBOL_MAP.put("\n", LexicalType.NL);
     }
 
     public LexicalAnalyzerImpl(FileInputStream fs) throws Exception {
@@ -53,6 +56,13 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 
     @Override
     public LexicalUnit get() throws Exception {
+        // ungetされたものがないか確認する
+        if (!buffer.isEmpty()){
+            int index = buffer.size()-1;
+            LexicalUnit unit = buffer.get(index);
+            buffer.remove(index);
+            return unit;
+        }
 
         while (true) {
             // まずは一文字読む
@@ -80,16 +90,27 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
                 return getLiteral();
             }
 
-            if (String.valueOf(ch).matches("[\\.\n\\+\\-\\*\\/\\)\\(,]")) {
+            if (SYMBOL_MAP.containsKey(ch + "")) {
                 reader.unread(ci);
-                return getSingleOperator();
-            }
-
-            if (String.valueOf(ch).matches("[><=]|=[><]|[><]=|<>")) {
-                reader.unread(ci);
-                return getMultiOperator();
+                return getSymbol();
             }
         }
+    }
+
+    public LexicalUnit peek () throws Exception {
+        return peek(1);
+    }
+
+    public LexicalUnit peek (int num) throws Exception {
+        List<LexicalUnit> list = new ArrayList<>();
+        for(int i=0; i<num; i++){
+            list.add(get());
+        }
+        LexicalUnit result = list.get(list.size()-1);
+        for (int i=list.size()-1; i >= 0; i--) {
+            unget(list.get(i));
+        }
+        return result;
     }
 
     private LexicalUnit getString() throws Exception {
@@ -150,48 +171,23 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         return new LexicalUnit(LexicalType.LITERAL, new ValueImpl(target));
     }
 
-    private LexicalUnit getSingleOperator() throws Exception {
+    private LexicalUnit getSymbol() throws Exception {
         String target = "";
         while (true) {
             int ci = reader.read();
+
+            if (ci < 0) return new LexicalUnit(SYMBOL_MAP.get(target));
             char ch = (char) ci;
-            if (String.valueOf(ch).matches("[\n]")) {
-                if (target.equals(""))
-                    target = String.valueOf(ch);
-                else
-                    reader.unread(ci);
-                break;
-            }
-            if (String.valueOf(ch).matches("[\\.\\+\\-\\*\\/\\)\\(,]")) {
+
+            if (SYMBOL_MAP.containsKey(target + ch)) {
                 target += ch;
-                continue;
+            } else {
+                reader.unread(ci);
+                return new LexicalUnit(SYMBOL_MAP.get(target));
             }
-            reader.unread(ci);
-            break;
         }
-        if (RESERVED_OPERATOR_MAP.containsKey(target))
-            return new LexicalUnit(RESERVED_OPERATOR_MAP.get(target));
-        else
-            throw new Exception();
     }
 
-    private LexicalUnit getMultiOperator() throws Exception {
-        String target = "";
-        while (true) {
-            int ci = reader.read();
-            char ch = (char) ci;
-            if (String.valueOf(ch).matches("[><=]|=[><]|[><]=|<>")) {
-                target += ch;
-                continue;
-            }
-            reader.unread(ci);
-            break;
-        }
-        if (RESERVED_OPERATOR_MAP.containsKey(target))
-            return new LexicalUnit(RESERVED_OPERATOR_MAP.get(target));
-        else
-            throw new Exception();
-    }
 
     @Override
     public boolean expect(LexicalType type) throws Exception {
@@ -200,6 +196,6 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 
     @Override
     public void unget(LexicalUnit token) throws Exception {
-
+        buffer.add(token);
     }
 }

@@ -18,11 +18,11 @@ public class BlockNode extends Node {
         return first.contains(type);
     }
 
-    public static Node getHandler(LexicalType type){
+    public static Node getHandler(LexicalType type, Environment env){
+        if (!isMatch(type)) return null;
         switch (type){
-            case IF: return new IfBlockNode();
-            case DO: return new DoBlockNode();
-            //case WHILE: return new WhileBlockNode();
+            case IF: return IfBlockNode.getHandler(type, env);
+            case DO: return LoopNode.getHandler(type, env);
             default:
                 return null;
         }
