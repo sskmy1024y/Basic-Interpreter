@@ -7,13 +7,14 @@ import java.util.*;
 
 public class IfBlockNode extends Node {
 
-    Node cond;			// 条件
-    Node process;	// trueの時の処理
-    Node elseProcess;			// elseの時の処理
+    private Node cond;			// 条件
+    private Node process;	// trueの時の処理
+    private Node elseProcess;			// elseの時の処理
+
+    private List<Node> followIfBlock = new ArrayList<>();     // elseifを格納する
 
     static Set<LexicalType> first = new HashSet<>(Arrays.asList(
-            LexicalType.IF,
-            LexicalType.ELSEIF
+            LexicalType.IF
     ));
 
     public static boolean isMatch(LexicalType type){
@@ -34,10 +35,11 @@ public class IfBlockNode extends Node {
         boolean isELSEIF = false;     // elseif
 
         // ELSEIFならばtrueへ
-        if (env.getInput().peek().getType() == LexicalType.ELSEIF){
+        LexicalType type = env.getInput().peek().getType();
+        if (type == LexicalType.ELSEIF){
             isELSEIF = true;
             env.getInput().get();
-        } else if (env.getInput().peek().getType() == LexicalType.IF) {
+        } else if (type == LexicalType.IF) {
             env.getInput().get();
         } else {
             throw new InternalError("Invalid call without IF or ELSEIF.");
@@ -45,7 +47,7 @@ public class IfBlockNode extends Node {
 
 
         // 条件文の確認
-        LexicalType type = env.getInput().peek().getType();
+        type = env.getInput().peek().getType();
         if (CondNode.isMatch(type)){
             cond = CondNode.getHandler(type, env);
             cond.parse();
@@ -54,7 +56,7 @@ public class IfBlockNode extends Node {
         }
 
         // THENの確認
-        if (env.getInput().get().getType()!=LexicalType.THEN) throw new SyntaxException("Invalid constitution of 'IF'. Not found 'THEN'. ");
+        if (env.getInput().get().getType() != LexicalType.THEN) throw new SyntaxException("Invalid constitution of 'IF'. Not found 'THEN'. ");
 
 
         type = env.getInput().peek().getType();
@@ -76,15 +78,23 @@ public class IfBlockNode extends Node {
 
             // ELSEIFもしくはELSEが続いている場合
             type2 = env.getInput().peek().getType();
-            if (type2 == LexicalType.ELSEIF) {
+            while (!isELSEIF && type2 == LexicalType.ELSEIF) {
                 // 別のIFBlockNodeを生成
-                elseProcess = IfBlockNode.getHandler(type2, env);
-                elseProcess.parse();
+//                elseProcess = IfBlockNode.getHandler(LexicalType.IF, env);
+//                elseProcess.parse();
 
-            } else if (type2 == LexicalType.ELSE) {
+                Node elseIfBlock = IfBlockNode.getHandler(LexicalType.IF, env);
+                elseIfBlock.parse();
+                followIfBlock.add(elseIfBlock);
+
+                type2 = env.getInput().peek().getType();
+            }
+
+            if (!isELSEIF && type2 == LexicalType.ELSE) {
                 // ELSEを破棄
                 env.getInput().get();
 
+                type2 = env.getInput().peek().getType();
                 if (env.getInput().get().getType() == LexicalType.NL){
 
                     LexicalType type3 = env.getInput().peek().getType();
@@ -138,37 +148,35 @@ public class IfBlockNode extends Node {
 
     public String toString(int indent) {
         String ret = "";
-        ret += "IF: condition="+cond+" THEN:[\n";
-        if (process.getType() != NodeType.STMT_LIST) {
-            for (int i=0; i < indent+1; i++) {
-                ret += "\t";
-            }
+        String dent = "";
+        for (int i=0; i < indent; i++) {
+            dent += "\t";
         }
+
+        ret += "IF: condition="+cond+" THEN:[\n";
+        if (process.getType() != NodeType.STMT_LIST) ret += dent+"\t";
+
         ret += process.toString(indent+1);
         if (process.getType() != NodeType.STMT_LIST) ret += "\n";
-        for (int i=0; i < indent; i++) {
-            ret += "\t";
-        }
-        ret += "] ELSE [\n";
-        if (elseProcess != null) {
-            if (elseProcess.getType() != NodeType.STMT_LIST) {
-                for (int i=0; i < indent+1; i++) {
-                    ret += "\t";
-                }
+
+        if (followIfBlock.size() > 0) {
+            for (Node elseifblock : followIfBlock) {
+                ret += dent;
+                ret += "] ELSEIF [\n";
+                ret += dent+"\t";
+                ret += elseifblock.toString(indent+1) + "\n";
             }
+        }
+
+        if (elseProcess != null) {
+            ret += dent;
+            ret += "] else [\n";
+            if (elseProcess.getType() != NodeType.STMT_LIST) ret += dent+"\t";
             ret += elseProcess.toString(indent+1);
             if (elseProcess.getType() != NodeType.STMT_LIST) ret += "\n";
-        } else {
-            for (int i=0; i < indent+1; i++) {
-                ret += "\t";
-            }
-            ret +=  "No process\n";
         }
-        for (int i=0; i < indent; i++) {
-            ret += "\t";
-        }
+        ret += dent;
         ret += "]";
         return ret;
     }
-
 }
