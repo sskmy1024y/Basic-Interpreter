@@ -78,7 +78,8 @@ public class ExprNode extends Node {
                             env.getInput().peek(2).getType() == LexicalType.LP) {
                         env.getInput().get();
                         result.add(ConstNode.getHandler(LexicalType.INTVAL, env, new ValueImpl(-1)));
-                        env.getInput().unget(new LexicalUnit(LexicalType.MUL));
+                        addOperator(result, operators, LexicalType.MUL);
+                        continue;
                     } else {
                         // 計算式中に置いて不正な-記号が使われている場合
                         throw new SyntaxException("Illegal - sign is used in calculation formulas.");
@@ -123,14 +124,15 @@ public class ExprNode extends Node {
 
 
     private void addOperator (List<Node> rList, List<LexicalType> oList, LexicalType newOperator) throws Exception {
+        boolean flag = false;
         for (int i=oList.size()-1; i>=0; i--) {
-            boolean flag = false;
             if (OPERATORS.get(oList.get(i)) < OPERATORS.get(newOperator)) {
                 flag = true;
+                rList.add(new ExprNode(rList.get(rList.size()-2), rList.get(rList.size()-1), oList.get(i)));
                 rList.remove(rList.size()-3);
                 rList.remove(rList.size()-2);
                 oList.remove(i);
-            } else if (flag = true && OPERATORS.get(oList.get(i)) >= OPERATORS.get(newOperator)) {
+            } else if (flag && OPERATORS.get(oList.get(i)) >= OPERATORS.get(newOperator)) {
                 break;
             }
         }

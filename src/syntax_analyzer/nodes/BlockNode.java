@@ -19,12 +19,12 @@ public class BlockNode extends Node {
     }
 
     public static Node getHandler(LexicalType type, Environment env){
-        if (!isMatch(type)) return null;
-        switch (type){
-            case IF: return IfBlockNode.getHandler(type, env);
-            case DO: return LoopNode.getHandler(type, env);
-            default:
-                return null;
+        if (IfBlockNode.isMatch(type)) {
+            return IfBlockNode.getHandler(type, env);
+        } else if (LoopNode.isMatch(type)) {
+            return LoopNode.getHandler(type, env);
+        } else {
+            throw new InternalError("Invalid token, Can't make Block Node.");
         }
     }
 }

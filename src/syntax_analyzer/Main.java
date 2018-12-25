@@ -6,7 +6,7 @@ import syntax_analyzer.nodes.*;
 
 public class Main {
 //	private static String filepath = "./src/test1.bas";
-	private static String filepath = "/Users/sho/sho/Develop/Github/temp/interpreter-testPrograms/test11-2.bas";
+	private static String filepath = "/Users/sho/sho/Develop/Github/temp/interpreter-testPrograms/test23.bas";
 
 	/**
 	 * @param args

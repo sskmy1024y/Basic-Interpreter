@@ -12,7 +12,8 @@ public class IfBlockNode extends Node {
     Node elseProcess;			// elseの時の処理
 
     static Set<LexicalType> first = new HashSet<>(Arrays.asList(
-            LexicalType.IF
+            LexicalType.IF,
+            LexicalType.ELSEIF
     ));
 
     public static boolean isMatch(LexicalType type){
@@ -30,13 +31,17 @@ public class IfBlockNode extends Node {
     }
 
     public void parse() throws Exception {
-        boolean isELSEIF = false;     // elseifがあるかどうか
+        boolean isELSEIF = false;     // elseif
 
         // ELSEIFならばtrueへ
-        if (env.getInput().peek().getType()==LexicalType.ELSEIF){
+        if (env.getInput().peek().getType() == LexicalType.ELSEIF){
             isELSEIF = true;
+            env.getInput().get();
+        } else if (env.getInput().peek().getType() == LexicalType.IF) {
+            env.getInput().get();
+        } else {
+            throw new InternalError("Invalid call without IF or ELSEIF.");
         }
-        env.getInput().get();
 
 
         // 条件文の確認
@@ -66,10 +71,8 @@ public class IfBlockNode extends Node {
                 throw new SyntaxException("Invalid constitution of 'IF'.");
             }
 
-
             // 分岐内終端NLを確認
             if (env.getInput().get().getType() != LexicalType.NL) throw new SyntaxException("Invalid constitution of 'IF'. Not found NewLine after processing.");
-
 
             // ELSEIFもしくはELSEが続いている場合
             type2 = env.getInput().peek().getType();
@@ -77,17 +80,19 @@ public class IfBlockNode extends Node {
                 // 別のIFBlockNodeを生成
                 elseProcess = IfBlockNode.getHandler(type2, env);
                 elseProcess.parse();
+
             } else if (type2 == LexicalType.ELSE) {
                 // ELSEを破棄
                 env.getInput().get();
 
                 if (env.getInput().get().getType() == LexicalType.NL){
+
                     LexicalType type3 = env.getInput().peek().getType();
                     if (StmtListNode.isMatch(type3)){
                         elseProcess = StmtListNode.getHandler(type3, env);
                         elseProcess.parse();
                     } else {
-                        //
+                        // ELSE文の構成が不正なとき
                         throw new SyntaxException("Invalid constitution of 'ELSE'.");
                     }
 
@@ -144,7 +149,7 @@ public class IfBlockNode extends Node {
         for (int i=0; i < indent; i++) {
             ret += "\t";
         }
-        ret += "] else : [\n";
+        ret += "] ELSE [\n";
         if (elseProcess != null) {
             if (elseProcess.getType() != NodeType.STMT_LIST) {
                 for (int i=0; i < indent+1; i++) {
