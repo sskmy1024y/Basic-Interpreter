@@ -11,6 +11,8 @@ public class IfBlockNode extends Node {
     private Node process;	// trueの時の処理
     private Node elseProcess;			// elseの時の処理
 
+    private boolean isELSEIF = false;
+
     private List<Node> followIfBlock = new ArrayList<>();     // elseifを格納する
 
     static Set<LexicalType> first = new HashSet<>(Arrays.asList(
@@ -32,8 +34,6 @@ public class IfBlockNode extends Node {
     }
 
     public void parse() throws Exception {
-        boolean isELSEIF = false;     // elseif
-
         // ELSEIFならばtrueへ
         LexicalType type = env.getInput().peek().getType();
         if (type == LexicalType.ELSEIF){
@@ -146,37 +146,55 @@ public class IfBlockNode extends Node {
         }
     }
 
+    public Value getValue() throws Exception {
+        if (cond.getValue().getBValue()) {
+            process.getValue();
+        } else {
+            // ELSEIFを実行
+            for (Node elseIfNode : followIfBlock) {
+                elseIfNode.getValue();
+            }
+
+            // 本来のELSEを実行
+            if (elseProcess != null) {
+                elseProcess.getValue();
+            }
+        }
+        return null;
+    }
+
     public String toString(int indent) {
-        String ret = "";
+        String res = "";
         String dent = "";
         for (int i=0; i < indent; i++) {
             dent += "\t";
         }
 
-        ret += "IF: condition="+cond+" THEN:[\n";
-        if (process.getType() != NodeType.STMT_LIST) ret += dent+"\t";
+        if (!isELSEIF) res += "IF:";
+        res += " condition="+cond+" THEN:[\n";
 
-        ret += process.toString(indent+1);
-        if (process.getType() != NodeType.STMT_LIST) ret += "\n";
+        if (process.getType() != NodeType.STMT_LIST) res += dent+"\t";
+
+        res += process.toString(indent+1);
+        if (process.getType() != NodeType.STMT_LIST) res += "\n";
 
         if (followIfBlock.size() > 0) {
             for (Node elseifblock : followIfBlock) {
-                ret += dent;
-                ret += "] ELSEIF [\n";
-                ret += dent+"\t";
-                ret += elseifblock.toString(indent+1) + "\n";
+                res += dent;
+                res += "] ELSEIF:";
+                res += elseifblock.toString(indent) + "\n";
             }
         }
 
         if (elseProcess != null) {
-            ret += dent;
-            ret += "] else [\n";
-            if (elseProcess.getType() != NodeType.STMT_LIST) ret += dent+"\t";
-            ret += elseProcess.toString(indent+1);
-            if (elseProcess.getType() != NodeType.STMT_LIST) ret += "\n";
+            res += dent;
+            res += "] ELSE [\n";
+            if (elseProcess.getType() != NodeType.STMT_LIST) res += dent+"\t";
+            res += elseProcess.toString(indent+1);
+            if (elseProcess.getType() != NodeType.STMT_LIST) res += "\n";
         }
-        ret += dent;
-        ret += "]";
-        return ret;
+        res += dent;
+        if (!isELSEIF) res += "]";
+        return res;
     }
 }

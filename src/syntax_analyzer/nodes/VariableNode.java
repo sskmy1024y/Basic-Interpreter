@@ -7,6 +7,7 @@ import java.util.*;
 
 public class VariableNode extends Node {
     String name;
+    Value value;
 
     private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
             LexicalType.NAME
@@ -16,26 +17,24 @@ public class VariableNode extends Node {
         return first.contains(type);
     }
 
-    public static Node getHandler(LexicalType type, Environment env, Value value) {
-        if (isMatch(type)) return new VariableNode(env, value);
-        else return null;
+    public VariableNode(String name) {
+        this.name = name;
     }
 
-    private VariableNode(Environment env, Value value) {
-        this.env = env;
-        this.type = NodeType.VARIABLE;
-        name = value.getSValue();
+    public VariableNode(String name,Value value) {
+        this.name = name;
+        this.value = value;
     }
 
     public void parse() throws Exception {
-        LexicalUnit lu = env.getInput().get();
-        env.getInput().unget(lu);
-        if (lu.getType() == LexicalType.NAME) {
-            name = env.getInput().get().getValue().getSValue();
-        } else {
-            // 変数の文字列が不適切な場合
-            throw new InternalError("Inappropriate character string as variable name.");
-        }
+    }
+
+    public void setValue(Value value){
+        this.value = value;
+    }
+
+    public Value getValue() {
+        return value;
     }
 
     public String toString() {

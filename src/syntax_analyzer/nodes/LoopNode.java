@@ -122,6 +122,28 @@ public class LoopNode extends Node {
         return true;
     }
 
+    public Value getValue() throws Exception {
+        if (isDo) { // exec first
+            process.getValue();
+        }
+
+        while (true) {
+            if (!judge()) {
+                return null;
+            }
+            process.getValue();
+        }
+    }
+
+    private boolean judge() throws Exception {
+        if ((cond.getValue().getBValue() && !isUntil) ||
+                (!cond.getValue().getBValue() && isUntil)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     @Override
     public String toString(int indent) {
         String ret = "";

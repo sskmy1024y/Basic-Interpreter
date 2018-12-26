@@ -45,6 +45,7 @@ public class StmtNode extends Node {
         throw new InternalError("Can't exec parse in StmtNode class.");
     }
 
+
     public String toString() {
         return "Stmt";
     }

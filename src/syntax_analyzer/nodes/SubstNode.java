@@ -46,6 +46,11 @@ public class SubstNode extends Node {
         }
     }
 
+    public Value getValue() throws Exception {
+        env.getVariable(leftVar).setValue(expr.getValue());
+        return null;
+    }
+
     public String toString() {
         return "SUBST:" + expr + " -> " + leftVar;
     }

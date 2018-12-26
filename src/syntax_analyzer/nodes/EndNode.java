@@ -1,6 +1,7 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.LexicalType;
+import lexical_analyzer.Value;
 import syntax_analyzer.*;
 
 import java.util.Arrays;
@@ -31,6 +32,11 @@ public class EndNode extends Node {
         if (env.getInput().get().getType()!=LexicalType.END){
             throw new InternalError("Is not END.");
         }
+    }
+
+    public Value getValue() {
+        System.exit(0);
+        return null;
     }
 
     @Override

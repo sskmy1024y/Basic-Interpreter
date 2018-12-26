@@ -1,6 +1,7 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.*;
+import libfunc.Function;
 import syntax_analyzer.*;
 
 import java.util.*;
@@ -57,6 +58,11 @@ public class CallNode extends Node {
                 throw new SyntaxException("Missing closing parenthesis for function call.");
             }
         }
+    }
+
+    public Value getValue() throws Exception {
+        Function function = env.getFunction(funcName);
+        return function.eval(arguments);
     }
 
     public String toString() {

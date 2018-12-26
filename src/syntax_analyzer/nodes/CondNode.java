@@ -1,6 +1,7 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.*;
+import libfunc.CalculateException;
 import syntax_analyzer.*;
 import java.util.*;
 
@@ -67,6 +68,34 @@ public class CondNode extends Node {
             // 条件文の中に不正な文字
             throw new SyntaxException("Invalid character in conditional statement.");
         }
+    }
+
+    public Value getValue() throws Exception {
+        Value leftValue = left.getValue();
+        Value rightValue = right.getValue();
+
+        boolean res = false;
+        switch (operator) {
+            case EQ:
+                res = leftValue.getSValue().equals(rightValue.getSValue());
+                break;
+            case LT:
+                res = leftValue.getDValue() < rightValue.getDValue();
+                break;
+            case GT:
+                res = leftValue.getDValue() > rightValue.getDValue();
+                break;
+            case GE:
+                res = leftValue.getDValue() >= rightValue.getDValue();
+                break;
+            case LE:
+                res = leftValue.getDValue() <= rightValue.getDValue();
+                break;
+            default:
+                throw new CalculateException("Invalid operator.");
+        }
+
+        return new ValueImpl(res);
     }
 
     public String toString() {

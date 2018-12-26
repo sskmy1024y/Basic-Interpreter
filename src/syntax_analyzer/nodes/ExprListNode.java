@@ -1,6 +1,7 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.*;
+import libfunc.CalculateException;
 import syntax_analyzer.*;
 
 import java.util.*;
@@ -60,10 +61,12 @@ public class ExprListNode extends Node {
         }
     }
 
-    public Value get(int index) throws Exception {
-        if (list.size() >= index) {
-            return list.get(index).getValue();
-        } else return null;
+    public Value get(int n) throws Exception {
+        try {
+            return list.get(n).getValue();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new CalculateException("Not found ");
+        }
     }
 
     public String toString() {

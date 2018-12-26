@@ -1,6 +1,7 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.*;
+import libfunc.CalculateException;
 import syntax_analyzer.*;
 
 import java.util.*;
@@ -91,7 +92,8 @@ public class ExprNode extends Node {
                         result.add(tmpNode);
                     } else {
                         lu = env.getInput().get();
-                        result.add(VariableNode.getHandler(lu.getType(), env, lu.getValue()));
+//                        result.add(VariableNode.getHandler(lu.getType(), env, lu.getValue()));
+                        result.add(env.getVariable(lu.getValue().getSValue()));
                     }
                     break;
                 default:
@@ -137,6 +139,60 @@ public class ExprNode extends Node {
             }
         }
         oList.add(newOperator);
+    }
+
+    public Value getValue() throws Exception {
+        if (operator == null) return left.getValue();
+
+        Value leftVal = left.getValue();
+        Value rightVal = right.getValue();
+
+        if (leftVal.getType() == ValueType.STRING || rightVal.getType() == ValueType.STRING) {
+            switch (operator) {
+                case ADD:
+                    return new ValueImpl(leftVal.getSValue() + rightVal.getSValue());
+                default:
+                    throw new CalculateException("Invalid calculate. Can not calculate string.");
+            }
+        } else if (leftVal.getType() == ValueType.DOUBLE || rightVal.getType() == ValueType.DOUBLE) {
+            double leftNum = leftVal.getDValue();
+            double rightNum = rightVal.getDValue();
+            switch (operator) {
+                case ADD:
+                    return new ValueImpl(leftNum + rightNum);
+                case SUB:
+                    return new ValueImpl(leftNum - rightNum);
+                case MUL:
+                    return new ValueImpl(leftNum * rightNum);
+                case DIV:
+                    if (rightNum != 0.00) {
+                        return new ValueImpl(leftNum / rightNum);
+                    } else {
+                        throw new CalculateException("Invalid division 'ZERO'.");
+                    }
+                default:
+                    throw new InternalError("Invalid operator.");
+            }
+        } else {
+            int leftNum = leftVal.getIValue();
+            int rightNum = rightVal.getIValue();
+            switch (operator) {
+                case ADD:
+                    return new ValueImpl(leftNum + rightNum);
+                case SUB:
+                    return new ValueImpl(leftNum - rightNum);
+                case MUL:
+                    return new ValueImpl(leftNum * rightNum);
+                case DIV:
+                    if (rightNum != 0) {
+                        return new ValueImpl(leftNum / rightNum);
+                    } else {
+                        throw new CalculateException("Invalid division 'ZERO'.");
+                    }
+                default:
+                    throw new InternalError("Invalid operator.");
+            }
+        }
     }
 
     public String toString() {

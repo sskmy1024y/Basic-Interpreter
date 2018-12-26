@@ -48,6 +48,10 @@ public class ConstNode extends Node {
         throw new InternalError("Can't exec parse in Const class.");
     }
 
+    public Value getValue() {
+        return value;
+    }
+
     public String toString() {
         return "Constant:" + value;
     }
