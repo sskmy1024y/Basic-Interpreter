@@ -50,4 +50,5 @@ public class ValueImpl implements Value {
         return type;
     }
 
+    public String toString() { return val; }
 }

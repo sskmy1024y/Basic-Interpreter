@@ -1,31 +1,39 @@
-package newlang4;
+package syntax_analyzer;
 
 import java.io.FileInputStream;
+import lexical_analyzer.*;
+import syntax_analyzer.nodes.*;
 
 public class Main {
+//	private static String filepath = "./src/test1.bas";
+	private static String filepath = "/Users/sho/sho/Develop/Github/temp/interpreter-testPrograms/test14-3.bas";
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-	       FileInputStream fin = null;
-	        LexicalAnalyzer lex;
-	        LexicalUnit		first;
-	        Environment		env;
-	        Node			program;
-	  
-	        System.out.println("basic parser");
-	        fin = new FileInputStream("test.txt");
-	        lex = new LexicalAnalyzerImpl(fin);
-	        env = new Environment(lex);
-	        first = lex.get();
-	        
-	        program = Program.isMatch(env, first);
-	        if (program != null && program.Parse()) {
-	        	System.out.println(program);
-	        	System.out.println("value = " + program.getValue());
-	        }
-	        else System.out.println("syntax error");
+		LexicalAnalyzerImpl	lex;
+		LexicalUnit			lu;
+		Environment 		env;
+		Node 				program;
+
+		System.out.println("basic parser");
+
+		if (args.length > 0) filepath = args[0];
+
+		try (FileInputStream fs = new FileInputStream(filepath)) {
+
+			lex = new LexicalAnalyzerImpl(fs);
+			lu  = lex.get();
+			lex.unget(lu);
+
+			env = new Environment(lex);
+			program = ProgramNode.getHandler(lu.getType(), env);
+			program.parse();
+			System.out.println(program.toString(0));
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 	}
 
 }
