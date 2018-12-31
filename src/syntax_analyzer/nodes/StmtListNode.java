@@ -1,19 +1,14 @@
 package syntax_analyzer.nodes;
 
-import lexical_analyzer.LexicalType;
-import lexical_analyzer.LexicalUnit;
-import lexical_analyzer.Value;
-import syntax_analyzer.Environment;
-import syntax_analyzer.Node;
-import syntax_analyzer.NodeType;
-import syntax_analyzer.SyntaxException;
+import lexical_analyzer.*;
+import syntax_analyzer.*;
 
 import java.util.*;
 
 public class StmtListNode extends Node {
 
     List<Node> list = new ArrayList<>();
-    static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
         LexicalType.IF,
         LexicalType.WHILE,
         LexicalType.DO,
@@ -31,7 +26,7 @@ public class StmtListNode extends Node {
     }
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     private StmtListNode(Environment env){

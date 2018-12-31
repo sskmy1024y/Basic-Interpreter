@@ -1,7 +1,6 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.*;
-import libfunc.CalculateException;
 import syntax_analyzer.*;
 
 import java.util.*;
@@ -10,7 +9,7 @@ public class ExprListNode extends Node {
 
     List<Node> list = new ArrayList<>();
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME,
             LexicalType.SUB,
             LexicalType.LP,
@@ -20,7 +19,7 @@ public class ExprListNode extends Node {
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static ExprListNode getHandler(LexicalType type, Environment env) {
@@ -62,11 +61,7 @@ public class ExprListNode extends Node {
     }
 
     public Value get(int n) throws Exception {
-        try {
-            return list.get(n).getValue();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new CalculateException("Not found ");
-        }
+        return list.get(n).getValue();
     }
 
     public String toString() {

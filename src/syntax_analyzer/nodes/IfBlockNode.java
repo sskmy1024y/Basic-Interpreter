@@ -13,14 +13,14 @@ public class IfBlockNode extends Node {
 
     private boolean isELSEIF = false;
 
-    private List<Node> followIfBlock = new ArrayList<>();     // elseifを格納する
+    private List<IfBlockNode> followIfBlock = new ArrayList<>();     // elseifを格納する
 
-    static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.IF
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler(LexicalType type, Environment env){
@@ -80,10 +80,7 @@ public class IfBlockNode extends Node {
             type2 = env.getInput().peek().getType();
             while (!isELSEIF && type2 == LexicalType.ELSEIF) {
                 // 別のIFBlockNodeを生成
-//                elseProcess = IfBlockNode.getHandler(LexicalType.IF, env);
-//                elseProcess.parse();
-
-                Node elseIfBlock = IfBlockNode.getHandler(LexicalType.IF, env);
+                IfBlockNode elseIfBlock = (IfBlockNode) IfBlockNode.getHandler(LexicalType.IF, env);
                 elseIfBlock.parse();
                 followIfBlock.add(elseIfBlock);
 
@@ -151,8 +148,11 @@ public class IfBlockNode extends Node {
             process.getValue();
         } else {
             // ELSEIFを実行
-            for (Node elseIfNode : followIfBlock) {
-                elseIfNode.getValue();
+            for (IfBlockNode elseIfNode : followIfBlock) {
+                if (elseIfNode.cond.getValue().getBValue()) {
+                    elseIfNode.getValue();
+                    return null;
+                }
             }
 
             // 本来のELSEを実行

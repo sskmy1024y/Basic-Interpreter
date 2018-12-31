@@ -8,15 +8,15 @@ import java.util.*;
 
 public class CallNode extends Node {
 
-    String funcName;        // 関数名
-    ExprListNode arguments; // 引数
+    private String funcName;        // 関数名
+    private ExprListNode arguments; // 引数
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     private CallNode(Environment env) {

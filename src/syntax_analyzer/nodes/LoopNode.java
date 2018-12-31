@@ -11,13 +11,13 @@ public class LoopNode extends Node {
     boolean isDo = false;
     boolean isUntil = false;
 
-    static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.DO,
             LexicalType.WHILE
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler(LexicalType type, Environment env){
@@ -123,7 +123,7 @@ public class LoopNode extends Node {
     }
 
     public Value getValue() throws Exception {
-        if (isDo) { // exec first
+        if (isDo) { // exec FIRST
             process.getValue();
         }
 

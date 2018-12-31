@@ -6,15 +6,15 @@ import syntax_analyzer.*;
 import java.util.*;
 
 public class VariableNode extends Node {
-    String name;
-    Value value;
+    private String name;
+    private Value value;
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public VariableNode(String name) {
@@ -24,9 +24,6 @@ public class VariableNode extends Node {
     public VariableNode(String name,Value value) {
         this.name = name;
         this.value = value;
-    }
-
-    public void parse() throws Exception {
     }
 
     public void setValue(Value value){

@@ -12,7 +12,7 @@ public class ExprNode extends Node {
     Node right;
     LexicalType operator;
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME,
             LexicalType.SUB,
             LexicalType.LP,
@@ -32,7 +32,7 @@ public class ExprNode extends Node {
 
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler(LexicalType type, Environment env) {
@@ -74,16 +74,17 @@ public class ExprNode extends Node {
                     result.add(ConstNode.getHandler(lu.getType(), env, lu.getValue()));
                     break;
                 case SUB:
-                    if (env.getInput().peek(2).getType() == LexicalType.INTVAL ||
-                            env.getInput().peek(2).getType() == LexicalType.DOUBLEVAL ||
-                            env.getInput().peek(2).getType() == LexicalType.LP) {
-                        env.getInput().get();
-                        result.add(ConstNode.getHandler(LexicalType.INTVAL, env, new ValueImpl(-1)));
-                        addOperator(result, operators, LexicalType.MUL);
-                        continue;
-                    } else {
-                        // 計算式中に置いて不正な-記号が使われている場合
-                        throw new SyntaxException("Illegal - sign is used in calculation formulas.");
+                    switch (env.getInput().peek(2).getType()){
+                        case INTVAL:
+                        case DOUBLEVAL:
+                        case LP:
+                            env.getInput().get();
+                            result.add(ConstNode.getHandler(LexicalType.INTVAL, env, new ValueImpl(-1)));
+                            addOperator(result, operators, LexicalType.MUL);
+                            continue;
+                        default:
+                            // 計算式中に置いて不正な-記号が使われている場合
+                            throw new SyntaxException("Illegal - sign is used in calculation formulas.");
                     }
                 case NAME:
                     if (env.getInput().peek(2).getType() == LexicalType.LP) {
@@ -92,7 +93,6 @@ public class ExprNode extends Node {
                         result.add(tmpNode);
                     } else {
                         lu = env.getInput().get();
-//                        result.add(VariableNode.getHandler(lu.getType(), env, lu.getValue()));
                         result.add(env.getVariable(lu.getValue().getSValue()));
                     }
                     break;

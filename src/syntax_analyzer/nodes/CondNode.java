@@ -11,7 +11,7 @@ public class CondNode extends Node {
     LexicalType operator;   // 演算子
     Node right;             // 右側
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME,
             LexicalType.SUB,
             LexicalType.LP,
@@ -20,7 +20,7 @@ public class CondNode extends Node {
             LexicalType.LITERAL
     ));
 
-    private final static Set<LexicalType> operators = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> OPERATORS = new HashSet<>(Arrays.asList(
             LexicalType.EQ,
             LexicalType.LT,
             LexicalType.LE,
@@ -30,7 +30,7 @@ public class CondNode extends Node {
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler (LexicalType type, Environment env) {
@@ -53,7 +53,7 @@ public class CondNode extends Node {
             throw new SyntaxException("Invalid start of condition statement.");
         }
 
-        if (operators.contains(env.getInput().peek().getType())) {
+        if (OPERATORS.contains(env.getInput().peek().getType())) {
             operator = env.getInput().get().getType();
         } else {
             // 条件文の中に不正な文字

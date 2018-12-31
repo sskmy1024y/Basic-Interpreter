@@ -7,9 +7,9 @@ import java.util.*;
 
 public class ConstNode extends Node {
 
-    Value value;
+    private Value value;
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.SUB,
             LexicalType.INTVAL,
             LexicalType.DOUBLEVAL,
@@ -17,7 +17,7 @@ public class ConstNode extends Node {
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     private ConstNode(Environment env, Value value) {
