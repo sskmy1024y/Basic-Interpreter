@@ -1,19 +1,14 @@
 package syntax_analyzer.nodes;
 
-import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
-import lexical_analyzer.LexicalType;
-import lexical_analyzer.LexicalUnit;
-import syntax_analyzer.Environment;
-import syntax_analyzer.Node;
-import syntax_analyzer.NodeType;
-import syntax_analyzer.SyntaxException;
+import lexical_analyzer.*;
+import syntax_analyzer.*;
 
 import java.util.*;
 
 public class StmtListNode extends Node {
 
-    List<Node> child = new ArrayList<>();
-    static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    List<Node> list = new ArrayList<>();
+    static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
         LexicalType.IF,
         LexicalType.WHILE,
         LexicalType.DO,
@@ -31,7 +26,7 @@ public class StmtListNode extends Node {
     }
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     private StmtListNode(Environment env){
@@ -63,7 +58,7 @@ public class StmtListNode extends Node {
                     break;
                 }
                 handler.parse();
-                child.add(handler);
+                list.add(handler);
             } catch (SyntaxException e) {
                 System.out.println(e.fillInStackTrace());
                 LexicalUnit lu = env.getInput().get();
@@ -75,9 +70,11 @@ public class StmtListNode extends Node {
         }
     }
 
-    @Override
-    public String toString() {
-        return "StmtList";
+    public Value getValue() throws Exception {
+        for (Node node : list) {
+            node.getValue();
+        }
+        return null;
     }
 
     @Override
@@ -86,12 +83,12 @@ public class StmtListNode extends Node {
         for (int i=0; i<indent; i++) {
             ret += "\t";
         }
-        ret += "stmtList(" + child.size() + "):\n";
-        for (int i=0; i<child.size(); i++) {
+        ret += "stmtList(" + list.size() + "):\n";
+        for (int i = 0; i< list.size(); i++) {
             for (int j=0; j<indent+1; j++) {
                 ret += "\t";
             }
-            ret += child.get(i).toString(indent+1) + "\n";
+            ret += list.get(i).toString(indent+1) + "\n";
         }
         return ret;
     }

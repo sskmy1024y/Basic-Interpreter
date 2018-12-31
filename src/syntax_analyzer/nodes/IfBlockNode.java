@@ -11,14 +11,16 @@ public class IfBlockNode extends Node {
     private Node process;	// trueの時の処理
     private Node elseProcess;			// elseの時の処理
 
-    private List<Node> followIfBlock = new ArrayList<>();     // elseifを格納する
+    private boolean isELSEIF = false;
 
-    static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private List<IfBlockNode> followIfBlock = new ArrayList<>();     // elseifを格納する
+
+    static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.IF
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler(LexicalType type, Environment env){
@@ -32,8 +34,6 @@ public class IfBlockNode extends Node {
     }
 
     public void parse() throws Exception {
-        boolean isELSEIF = false;     // elseif
-
         // ELSEIFならばtrueへ
         LexicalType type = env.getInput().peek().getType();
         if (type == LexicalType.ELSEIF){
@@ -80,10 +80,7 @@ public class IfBlockNode extends Node {
             type2 = env.getInput().peek().getType();
             while (!isELSEIF && type2 == LexicalType.ELSEIF) {
                 // 別のIFBlockNodeを生成
-//                elseProcess = IfBlockNode.getHandler(LexicalType.IF, env);
-//                elseProcess.parse();
-
-                Node elseIfBlock = IfBlockNode.getHandler(LexicalType.IF, env);
+                IfBlockNode elseIfBlock = (IfBlockNode) IfBlockNode.getHandler(LexicalType.IF, env);
                 elseIfBlock.parse();
                 followIfBlock.add(elseIfBlock);
 
@@ -146,37 +143,58 @@ public class IfBlockNode extends Node {
         }
     }
 
+    public Value getValue() throws Exception {
+        if (cond.getValue().getBValue()) {
+            process.getValue();
+        } else {
+            // ELSEIFを実行
+            for (IfBlockNode elseIfNode : followIfBlock) {
+                if (elseIfNode.cond.getValue().getBValue()) {
+                    elseIfNode.getValue();
+                    return null;
+                }
+            }
+
+            // 本来のELSEを実行
+            if (elseProcess != null) {
+                elseProcess.getValue();
+            }
+        }
+        return null;
+    }
+
     public String toString(int indent) {
-        String ret = "";
+        String res = "";
         String dent = "";
         for (int i=0; i < indent; i++) {
             dent += "\t";
         }
 
-        ret += "IF: condition="+cond+" THEN:[\n";
-        if (process.getType() != NodeType.STMT_LIST) ret += dent+"\t";
+        if (!isELSEIF) res += "IF:";
+        res += " condition="+cond+" THEN:[\n";
 
-        ret += process.toString(indent+1);
-        if (process.getType() != NodeType.STMT_LIST) ret += "\n";
+        if (process.getType() != NodeType.STMT_LIST) res += dent+"\t";
+
+        res += process.toString(indent+1);
+        if (process.getType() != NodeType.STMT_LIST) res += "\n";
 
         if (followIfBlock.size() > 0) {
             for (Node elseifblock : followIfBlock) {
-                ret += dent;
-                ret += "] ELSEIF [\n";
-                ret += dent+"\t";
-                ret += elseifblock.toString(indent+1) + "\n";
+                res += dent;
+                res += "] ELSEIF:";
+                res += elseifblock.toString(indent) + "\n";
             }
         }
 
         if (elseProcess != null) {
-            ret += dent;
-            ret += "] else [\n";
-            if (elseProcess.getType() != NodeType.STMT_LIST) ret += dent+"\t";
-            ret += elseProcess.toString(indent+1);
-            if (elseProcess.getType() != NodeType.STMT_LIST) ret += "\n";
+            res += dent;
+            res += "] ELSE [\n";
+            if (elseProcess.getType() != NodeType.STMT_LIST) res += dent+"\t";
+            res += elseProcess.toString(indent+1);
+            if (elseProcess.getType() != NodeType.STMT_LIST) res += "\n";
         }
-        ret += dent;
-        ret += "]";
-        return ret;
+        res += dent;
+        if (!isELSEIF) res += "]";
+        return res;
     }
 }

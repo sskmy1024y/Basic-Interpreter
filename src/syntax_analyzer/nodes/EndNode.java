@@ -1,6 +1,7 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.LexicalType;
+import lexical_analyzer.Value;
 import syntax_analyzer.*;
 
 import java.util.Arrays;
@@ -9,12 +10,12 @@ import java.util.Set;
 
 public class EndNode extends Node {
 
-    private static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.END
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler(LexicalType type, Environment env) throws Exception {
@@ -31,6 +32,11 @@ public class EndNode extends Node {
         if (env.getInput().get().getType()!=LexicalType.END){
             throw new InternalError("Is not END.");
         }
+    }
+
+    public Value getValue() {
+        System.exit(0);
+        return null;
     }
 
     @Override

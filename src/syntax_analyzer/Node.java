@@ -4,7 +4,7 @@ import lexical_analyzer.LexicalType;
 import lexical_analyzer.LexicalUnit;
 import lexical_analyzer.Value;
 
-abstract public class Node {
+public abstract class Node {
     protected NodeType type;
     protected Environment env;
 
@@ -21,21 +21,20 @@ abstract public class Node {
     public NodeType getType() {
         return type;
     }
-    
+
     public void parse() throws Exception {
     }
-    
+
     public Value getValue() throws Exception {
         return null;
     }
- 
+
     public String toString() {
     	if (type == NodeType.END) return "END";
     	else return "Node";        
     }
 
     public String toString(int indent) {
-        if (type == NodeType.END) return "END";
-        else return "Node";
+        return toString();
     }
 }

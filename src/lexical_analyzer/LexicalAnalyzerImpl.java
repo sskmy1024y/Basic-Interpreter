@@ -33,10 +33,10 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
         SYMBOL_MAP.put("=", LexicalType.EQ);
         SYMBOL_MAP.put("<", LexicalType.LT);
         SYMBOL_MAP.put(">", LexicalType.GT);
-        SYMBOL_MAP.put(">=", LexicalType.LE);
-        SYMBOL_MAP.put("=>", LexicalType.LE);
-        SYMBOL_MAP.put("<=", LexicalType.GE);
-        SYMBOL_MAP.put("=<", LexicalType.GE);
+        SYMBOL_MAP.put(">=", LexicalType.GE);
+        SYMBOL_MAP.put("=>", LexicalType.GE);
+        SYMBOL_MAP.put("<=", LexicalType.LE);
+        SYMBOL_MAP.put("=<", LexicalType.LE);
         SYMBOL_MAP.put("<>", LexicalType.NE);
         SYMBOL_MAP.put("+", LexicalType.ADD);
         SYMBOL_MAP.put("-", LexicalType.SUB);

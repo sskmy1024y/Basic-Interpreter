@@ -83,6 +83,20 @@ public class ForNode extends Node {
 
     }
 
+    public Value getValue() throws Exception {
+        init.getValue();
+        while (true) {
+            if (env.getVariable(step).getValue().getIValue() > max.getValue().getIValue()) {
+                return null;
+            }
+            process.getValue();
+            env.getVariable(step).setValue(
+                    new ExprNode(env.getVariable(step), ConstNode.getHandler(LexicalType.INTVAL, env, new ValueImpl(1)),
+                            (LexicalType.ADD)).getValue()
+            );
+        }
+    }
+
     public String toString(int indent) {
         String ret = "";
         ret += "FOR:init=" + init + " max=" + max + " process[\n";

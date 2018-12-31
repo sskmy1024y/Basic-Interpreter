@@ -1,6 +1,7 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.*;
+import libfunc.CalculateException;
 import syntax_analyzer.*;
 import java.util.*;
 
@@ -10,7 +11,7 @@ public class CondNode extends Node {
     LexicalType operator;   // 演算子
     Node right;             // 右側
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME,
             LexicalType.SUB,
             LexicalType.LP,
@@ -19,7 +20,7 @@ public class CondNode extends Node {
             LexicalType.LITERAL
     ));
 
-    private final static Set<LexicalType> operators = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> OPERATORS = new HashSet<>(Arrays.asList(
             LexicalType.EQ,
             LexicalType.LT,
             LexicalType.LE,
@@ -29,7 +30,7 @@ public class CondNode extends Node {
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler (LexicalType type, Environment env) {
@@ -52,7 +53,7 @@ public class CondNode extends Node {
             throw new SyntaxException("Invalid start of condition statement.");
         }
 
-        if (operators.contains(env.getInput().peek().getType())) {
+        if (OPERATORS.contains(env.getInput().peek().getType())) {
             operator = env.getInput().get().getType();
         } else {
             // 条件文の中に不正な文字
@@ -67,6 +68,34 @@ public class CondNode extends Node {
             // 条件文の中に不正な文字
             throw new SyntaxException("Invalid character in conditional statement.");
         }
+    }
+
+    public Value getValue() throws Exception {
+        Value leftValue = left.getValue();
+        Value rightValue = right.getValue();
+
+        boolean res = false;
+        switch (operator) {
+            case EQ:
+                res = leftValue.getSValue().equals(rightValue.getSValue());
+                break;
+            case LT:
+                res = leftValue.getDValue() < rightValue.getDValue();
+                break;
+            case GT:
+                res = leftValue.getDValue() > rightValue.getDValue();
+                break;
+            case GE:
+                res = leftValue.getDValue() >= rightValue.getDValue();
+                break;
+            case LE:
+                res = leftValue.getDValue() <= rightValue.getDValue();
+                break;
+            default:
+                throw new CalculateException("Invalid operator.");
+        }
+
+        return new ValueImpl(res);
     }
 
     public String toString() {

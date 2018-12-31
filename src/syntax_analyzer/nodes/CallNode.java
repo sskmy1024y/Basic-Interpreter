@@ -1,21 +1,22 @@
 package syntax_analyzer.nodes;
 
 import lexical_analyzer.*;
+import libfunc.Function;
 import syntax_analyzer.*;
 
 import java.util.*;
 
 public class CallNode extends Node {
 
-    String funcName;        // 関数名
-    ExprListNode arguments; // 引数
+    private String funcName;        // 関数名
+    private ExprListNode arguments; // 引数
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     private CallNode(Environment env) {
@@ -57,6 +58,11 @@ public class CallNode extends Node {
                 throw new SyntaxException("Missing closing parenthesis for function call.");
             }
         }
+    }
+
+    public Value getValue() throws Exception {
+        Function function = env.getFunction(funcName);
+        return function.eval(arguments);
     }
 
     public String toString() {

@@ -8,14 +8,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class StmtNode extends Node {
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME,
             LexicalType.FOR,
             LexicalType.END
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler(LexicalType type, Environment env) throws Exception{
@@ -44,6 +44,7 @@ public class StmtNode extends Node {
     public void parse() throws InternalError {
         throw new InternalError("Can't exec parse in StmtNode class.");
     }
+
 
     public String toString() {
         return "Stmt";

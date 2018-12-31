@@ -5,15 +5,15 @@ import lexical_analyzer.*;
 import syntax_analyzer.*;
 
 public class SubstNode extends Node {
-    String leftVar = "";
-    Node expr;
+    private String leftVar = "";
+    private Node expr;
 
-    private final static Set<LexicalType> first = new HashSet<>(Arrays.asList(
+    private final static Set<LexicalType> FIRST = new HashSet<>(Arrays.asList(
             LexicalType.NAME
     ));
 
     public static boolean isMatch(LexicalType type){
-        return first.contains(type);
+        return FIRST.contains(type);
     }
 
     public static Node getHandler(LexicalType type, Environment env) {
@@ -44,6 +44,11 @@ public class SubstNode extends Node {
             // 式の後半が式として評価ない
             throw new SyntaxException("Can't evaluate the second half of the expression.");
         }
+    }
+
+    public Value getValue() throws Exception {
+        env.getVariable(leftVar).setValue(expr.getValue());
+        return null;
     }
 
     public String toString() {
